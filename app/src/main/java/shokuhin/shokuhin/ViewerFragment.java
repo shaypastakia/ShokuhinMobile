@@ -4,16 +4,15 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
-import android.speech.tts.TextToSpeechService;
-import android.text.method.CharacterPickerDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.Switch;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.Locale;
 
 import recipe.Recipe;
@@ -30,8 +29,10 @@ public class ViewerFragment extends Fragment {
     Button prevButton;
     Button nextButton;
     TextView textView;
+    ScrollView scrollView;
     Recipe rec;
     TextToSpeech speech;
+    int index = -1;
 
     /**
      * The fragment argument representing the section number for this
@@ -53,6 +54,7 @@ public class ViewerFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        index = -1;
         View rootView = inflater.inflate(R.layout.fragment_viewer, container, false);
         textView = (TextView)rootView.findViewById(R.id.textView);
         infoButton = (Button)rootView.findViewById(R.id.infoButton);
@@ -61,6 +63,7 @@ public class ViewerFragment extends Fragment {
         speakButton = (Button) rootView.findViewById(R.id.speakButton);
         prevButton = (Button) rootView.findViewById(R.id.prevButton);
         nextButton = (Button) rootView.findViewById(R.id.nextButton);
+        scrollView = (ScrollView) rootView.findViewById(R.id.scrollView);
         rec = main.recipe;
         try {
             rec.getTitle();
@@ -78,11 +81,37 @@ public class ViewerFragment extends Fragment {
             }
         });
 
+        nextButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                nextStep();
+            }
+        });
+
+        prevButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                prevStep();
+            }
+        });
+
         speakButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String s = "cheese is a type of meat";
-                speech.speak(s, TextToSpeech.QUEUE_FLUSH, null, null);
+                try {
+                    String step = rec.getMethodSteps().get(index);
+                    if (step == null){
+                        return;
+                    }
+
+                    if (step.length() > speech.getMaxSpeechInputLength()){
+                        speech.speak("Sorry, but the method step is too long for me to read.",
+                                TextToSpeech.QUEUE_FLUSH, null, null);
+                    }
+                    speech.speak(rec.getMethodSteps().get(index), TextToSpeech.QUEUE_FLUSH, null, null);
+                } catch (Exception e){
+                    Toast.makeText(main, "Unable to produce Speech", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -112,6 +141,7 @@ public class ViewerFragment extends Fragment {
     }
 
     public void getInfo(){
+        scrollView.scrollTo(0, 0);
         prevButton.setVisibility(View.INVISIBLE);
         nextButton.setVisibility(View.INVISIBLE);
         speakButton.setVisibility(View.INVISIBLE);
@@ -154,6 +184,7 @@ public class ViewerFragment extends Fragment {
     }
 
     public void getIngredients(){
+        scrollView.scrollTo(0, 0);
         prevButton.setVisibility(View.INVISIBLE);
         nextButton.setVisibility(View.INVISIBLE);
         speakButton.setVisibility(View.INVISIBLE);
@@ -166,10 +197,37 @@ public class ViewerFragment extends Fragment {
     }
 
     public void getMethod(){
+        scrollView.scrollTo(0, 0);
         prevButton.setVisibility(View.VISIBLE);
         nextButton.setVisibility(View.VISIBLE);
         speakButton.setVisibility(View.VISIBLE);
-        textView.setText("");
+
+        ArrayList<String> steps = rec.getMethodSteps();
+        textView.setText(steps.get(index +1));
+        index++;
+
+    }
+
+    public void prevStep(){
+        try {
+            scrollView.scrollTo(0, 0);
+            ArrayList<String> steps = rec.getMethodSteps();
+            textView.setText(steps.get(index - 1));
+            index--;
+        } catch (Exception e){
+
+        }
+    }
+
+    public void nextStep(){
+        try {
+            scrollView.scrollTo(0, 0);
+            ArrayList<String> steps = rec.getMethodSteps();
+            textView.setText(steps.get(index + 1));
+            index++;
+        } catch (Exception e){
+
+        }
     }
 
     @Override

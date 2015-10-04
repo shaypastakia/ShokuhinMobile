@@ -15,6 +15,7 @@ import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
@@ -78,7 +79,7 @@ public class RecipeListFragment extends Fragment {
             recipes[i] = s;
             i++;
         }
-
+        Arrays.sort(recipes);
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(main,android.R.layout.simple_list_item_1,recipes);
         listView.setAdapter(adapter);
 
@@ -93,9 +94,9 @@ public class RecipeListFragment extends Fragment {
                     main.recipe = (Recipe)task.get();
 //                        Toast.makeText(main, "2", Toast.LENGTH_LONG).show();
 //                        Toast.makeText(main, "3", Toast.LENGTH_LONG).show();
-//                        main.getFragmentManager().beginTransaction()
-//                                .replace(R.id.container, main.viewerFragment)
-//                                .commit();
+                        main.getFragmentManager().beginTransaction()
+                                .replace(R.id.container, main.viewerFragment)
+                                .commit();
 //                        Toast.makeText(main, "4", Toast.LENGTH_LONG).show();
                 } catch (Exception e) {
                     Toast.makeText(main, "FAILED", Toast.LENGTH_LONG).show();
