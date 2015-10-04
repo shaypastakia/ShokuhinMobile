@@ -15,14 +15,74 @@
         android:layout_centerVertical="true"
         android:layout_alignParentEnd="true">
 
-        <WebView
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/webView"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:id="@+id/textView"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
+            android:layout_below="@+id/infoButton"
+            android:layout_above="@+id/prevButton" />
+
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Info"
+            android:id="@+id/infoButton"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true"
+            android:layout_toStartOf="@+id/ingredientsButton" />
+
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ingredients"
+            android:id="@+id/ingredientsButton"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true" />
+
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Method"
+            android:id="@+id/methodButton"
             android:layout_alignParentTop="true"
             android:layout_alignParentEnd="true"
+            android:layout_toEndOf="@+id/ingredientsButton" />
+
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="&lt;"
+            android:id="@+id/prevButton"
             android:layout_alignParentBottom="true"
-            android:layout_alignParentStart="true" />
+            android:layout_alignParentStart="true"
+            android:textSize="20dp"
+            android:layout_toStartOf="@+id/ingredientsButton" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=">"
+            android:id="@+id/nextButton"
+            android:layout_alignTop="@+id/prevButton"
+            android:layout_alignParentEnd="true"
+            android:textSize="20dp"
+            android:layout_alignStart="@+id/methodButton" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="speak"
+            android:id="@+id/speakButton"
+            android:layout_alignTop="@+id/prevButton"
+            android:layout_centerHorizontal="true" />
+
     </RelativeLayout>
 
 </RelativeLayout>
