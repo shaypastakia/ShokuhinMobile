@@ -201,11 +201,15 @@ public class ViewerFragment extends Fragment {
         prevButton.setVisibility(View.VISIBLE);
         nextButton.setVisibility(View.VISIBLE);
         speakButton.setVisibility(View.VISIBLE);
-
         ArrayList<String> steps = rec.getMethodSteps();
-        textView.setText(steps.get(index +1));
-        index++;
 
+        if (index == -1) {
+
+            textView.setText(steps.get(index + 1));
+            index++;
+        } else {
+            textView.setText(steps.get(index));
+        }
     }
 
     public void prevStep(){
