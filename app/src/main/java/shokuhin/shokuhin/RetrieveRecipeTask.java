@@ -37,9 +37,6 @@ public class RetrieveRecipeTask extends AsyncTask<String, Void, Recipe> {
         Recipe recipe = null;
 
         try {
-            File httpCacheDir = new File(main.getCacheDir(), "http");
-            long httpCacheSize = 10 * 1024 * 1024; // 10 MiB
-            HttpResponseCache.install(httpCacheDir, httpCacheSize);
 
             URL url = new URL("http://194.83.236.93/~spastakia/Shokuhin/" + recipes[position].replaceAll(" ", "%20") + ".rec");
             connection = (HttpURLConnection) url.openConnection();

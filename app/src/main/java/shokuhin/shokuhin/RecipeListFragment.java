@@ -48,8 +48,8 @@ public class RecipeListFragment extends Fragment {
         setArguments(args);
 
         try {
-            new RetrieveListTask(main).execute();
-            InputStream inStream = new FileInputStream(main.getFilesDir() + "/list.hmap");
+//            new RetrieveListTask(main).execute();
+            InputStream inStream = new FileInputStream(new RetrieveListTask(main).execute().get());
             BufferedInputStream buff = new BufferedInputStream(inStream);
             ObjectInputStream obj = new ObjectInputStream(buff);
             HashMap<String, Date> ls = (HashMap<String, Date>) obj.readObject();

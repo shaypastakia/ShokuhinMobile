@@ -10,13 +10,15 @@ import android.view.MenuItem;
 import android.support.v4.widget.DrawerLayout;
 import android.widget.Toast;
 
+import java.io.File;
+
 import recipe.Recipe;
 
 
 public class MainActivity extends Activity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
 
-    RecipeListFragment searchFragment;
+    RecipeListFragment searchFragment = new RecipeListFragment().initialise(0, this);
     ViewerFragment viewerFragment = new ViewerFragment().initialise(1, this);
     public Recipe recipe;
 
@@ -44,6 +46,33 @@ public class MainActivity extends Activity
                 (DrawerLayout) findViewById(R.id.drawer_layout));
 
 
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        File dir = getCacheDir();
+        try {
+            if (dir != null && dir.isDirectory()) {
+                deleteDir(dir);
+                deleteDir(getFilesDir());
+            }
+        } catch (Exception e) {
+        }
+    }
+
+    public
+    boolean deleteDir(File dir) {
+        if (dir != null && dir.isDirectory()) {
+            String[] children = dir.list();
+            for (int i = 0; i < children.length; i++) {
+                boolean success = deleteDir(new File(dir, children[i]));
+                if (!success) {
+                    return false;
+                }
+            }
+        }
+        return dir.delete();
     }
 
     @Override

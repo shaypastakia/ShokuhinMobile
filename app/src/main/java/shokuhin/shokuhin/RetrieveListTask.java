@@ -3,16 +3,19 @@ package shokuhin.shokuhin;
 import android.os.AsyncTask;
 import android.widget.Toast;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Date;
+import java.util.HashMap;
 
 /**
  * Created by shayp on 04/10/2015.
  */
-public class RetrieveListTask extends AsyncTask<String, Void, Boolean> {
+public class RetrieveListTask extends AsyncTask<String, Void, File> {
     InputStream input = null;
     OutputStream output = null;
     HttpURLConnection connection = null;
@@ -22,7 +25,7 @@ public class RetrieveListTask extends AsyncTask<String, Void, Boolean> {
         main = _main;
     }
 
-    protected Boolean doInBackground(String... strings){
+    protected File doInBackground(String... strings){
         try {
             URL url = new URL("http://194.83.236.93/~spastakia/Shokuhin/list.hmap");
             connection = (HttpURLConnection) url.openConnection();
@@ -42,10 +45,11 @@ public class RetrieveListTask extends AsyncTask<String, Void, Boolean> {
             }
             output.close();
             input.close();
-            return true;
+            new File(main.getFilesDir() + "/list.hmap").deleteOnExit();
+            return new File(main.getFilesDir() + "/list.hmap");
         } catch (Exception e){
             e.printStackTrace();
-            return false;
+            return null;
         }
     }
 

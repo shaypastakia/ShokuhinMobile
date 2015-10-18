@@ -48,10 +48,11 @@
             style="?android:attr/buttonStyleSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Ingredients"
+            android:text="         Ingredients         "
             android:id="@+id/ingredientsButton"
             android:layout_alignParentTop="true"
-            android:layout_centerHorizontal="true" />
+            android:layout_centerHorizontal="true"
+            android:layout_alignParentEnd="false" />
 
         <Button
             style="?android:attr/buttonStyleSmall"
@@ -61,7 +62,8 @@
             android:id="@+id/methodButton"
             android:layout_alignParentTop="true"
             android:layout_alignParentEnd="true"
-            android:layout_toEndOf="@+id/ingredientsButton" />
+            android:layout_toEndOf="@+id/ingredientsButton"
+            android:elegantTextHeight="true" />
 
         <Button
             style="?android:attr/buttonStyleSmall"
@@ -87,10 +89,11 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="speak"
+            android:text="               speak              "
             android:id="@+id/speakButton"
             android:layout_alignTop="@+id/prevButton"
-            android:layout_centerHorizontal="true" />
+            android:layout_centerHorizontal="true"
+            android:longClickable="true" />
 
     </RelativeLayout>
 

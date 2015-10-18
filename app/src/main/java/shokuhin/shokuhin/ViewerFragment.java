@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
+import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,9 +32,12 @@ public class ViewerFragment extends Fragment {
     TextView textView;
     ScrollView scrollView;
     Recipe rec;
+    ArrayList<String> ingredients = new ArrayList<String>();
     TextToSpeech speech;
+    boolean autoSpeak = false;
     int index = -1;
 
+    String highlightColour = "#5CC857";
     /**
      * The fragment argument representing the section number for this
      * fragment.
@@ -99,7 +103,7 @@ public class ViewerFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 try {
-                    String step = rec.getMethodSteps().get(index);
+                    String step = android.text.Html.fromHtml(rec.getMethodSteps().get(index)).toString();
                     if (step == null){
                         return;
                     }
@@ -108,10 +112,24 @@ public class ViewerFragment extends Fragment {
                         speech.speak("Sorry, but the method step is too long for me to read.",
                                 TextToSpeech.QUEUE_FLUSH, null, null);
                     }
-                    speech.speak(rec.getMethodSteps().get(index), TextToSpeech.QUEUE_FLUSH, null, null);
+                    speech.speak(step, TextToSpeech.QUEUE_FLUSH, null, null);
                 } catch (Exception e){
                     Toast.makeText(main, "Unable to produce Speech", Toast.LENGTH_SHORT).show();
                 }
+            }
+        });
+
+        speakButton.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                if (autoSpeak){
+                    Toast.makeText(main, "Disabled AutoSpeak", Toast.LENGTH_SHORT).show();
+                    autoSpeak = false;
+                } else {
+                    Toast.makeText(main, "Enabled AutoSpeak", Toast.LENGTH_SHORT).show();
+                    autoSpeak = true;
+                }
+                return false;
             }
         });
 
@@ -125,7 +143,7 @@ public class ViewerFragment extends Fragment {
         ingredientsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                getIngredients();
+                getIngredients(true);
             }
         });
 
@@ -183,7 +201,8 @@ public class ViewerFragment extends Fragment {
                 "\n\nCourse: " + course + "\n\nTags: " + tags);
     }
 
-    public void getIngredients(){
+    public void getIngredients(boolean display){
+        ingredients.clear();
         scrollView.scrollTo(0, 0);
         prevButton.setVisibility(View.INVISIBLE);
         nextButton.setVisibility(View.INVISIBLE);
@@ -192,23 +211,41 @@ public class ViewerFragment extends Fragment {
 
         for (String s : rec.getIngredients()){
             text = text.concat(s + "\n\n");
+            String[] words = s.split(" ");
+            for(String word : words) {
+                if (word.length() > 0 && Character.isUpperCase(word.charAt(0))) {
+                    ingredients.add(word);
+                }
+            }
         }
+        if (display)
         textView.setText(text);
     }
 
     public void getMethod(){
+            getIngredients(false);
         scrollView.scrollTo(0, 0);
         prevButton.setVisibility(View.VISIBLE);
         nextButton.setVisibility(View.VISIBLE);
         speakButton.setVisibility(View.VISIBLE);
         ArrayList<String> steps = rec.getMethodSteps();
+        for (String s : ingredients){
+            for (String s2 : rec.getMethodSteps()){
+                if (s2.contains(s) || s2.contains(s.toLowerCase())){
+                    String temp = "";
+                    temp = s2.replaceAll(s, "<font color=" + highlightColour + "><b>" + s + "</b></font>");
+                    temp = temp.replaceAll(s.toLowerCase(), "<font color=" + highlightColour + "><b>" + s + "</b></font>");
+                    steps.set(steps.indexOf(s2), temp);
+                }
+            }
+        }
 
         if (index == -1) {
 
-            textView.setText(steps.get(index + 1));
+            textView.setText(Html.fromHtml(steps.get(index + 1)));
             index++;
         } else {
-            textView.setText(steps.get(index));
+            textView.setText(Html.fromHtml(steps.get(index)));
         }
     }
 
@@ -216,8 +253,10 @@ public class ViewerFragment extends Fragment {
         try {
             scrollView.scrollTo(0, 0);
             ArrayList<String> steps = rec.getMethodSteps();
-            textView.setText(steps.get(index - 1));
+            textView.setText(Html.fromHtml(steps.get(index - 1)));
             index--;
+            if (autoSpeak)
+                speakButton.performClick();
         } catch (Exception e){
 
         }
@@ -227,8 +266,10 @@ public class ViewerFragment extends Fragment {
         try {
             scrollView.scrollTo(0, 0);
             ArrayList<String> steps = rec.getMethodSteps();
-            textView.setText(steps.get(index + 1));
+            textView.setText(Html.fromHtml(steps.get(index + 1)));
             index++;
+            if (autoSpeak)
+                speakButton.performClick();
         } catch (Exception e){
 
         }
