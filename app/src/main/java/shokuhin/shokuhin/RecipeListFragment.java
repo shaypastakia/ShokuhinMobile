@@ -15,6 +15,7 @@ import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -30,7 +31,7 @@ public class RecipeListFragment extends Fragment {
     MainActivity main;
     ListView listView;
     String[] recipes;
-    ConcurrentHashMap<String, Date> list;
+    ArrayList<String> list;
 
     /**
      * The fragment argument representing the section number for this
@@ -49,12 +50,8 @@ public class RecipeListFragment extends Fragment {
 
         try {
 //            new RetrieveListTask(main).execute();
-            InputStream inStream = new FileInputStream(new RetrieveListTask(main).execute().get());
-            BufferedInputStream buff = new BufferedInputStream(inStream);
-            ObjectInputStream obj = new ObjectInputStream(buff);
-            HashMap<String, Date> ls = (HashMap<String, Date>) obj.readObject();
-            list = new ConcurrentHashMap<>(ls);
-            obj.close();
+            //Call RetrieveListTask to retrieve the list.hmap HashMap object file
+            list = new RetrieveListTask(main).execute().get();
         } catch (Exception e){
             e.printStackTrace();
         }
@@ -66,7 +63,7 @@ public class RecipeListFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         listView = (ListView)rootView.findViewById(R.id.listView);
-
+        int width = main.size.x;
         try {
             recipes = new String[list.size()];
         } catch (Exception e){
@@ -75,7 +72,7 @@ public class RecipeListFragment extends Fragment {
             return null;
         }
         int i = 0;
-        for (String s : list.keySet()){
+        for (String s : list){
             recipes[i] = s;
             i++;
         }

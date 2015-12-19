@@ -2,12 +2,17 @@ package shokuhin.shokuhin;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Context;
+import android.graphics.Color;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.text.Html;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -60,6 +65,7 @@ public class ViewerFragment extends Fragment {
                              Bundle savedInstanceState) {
         index = -1;
         View rootView = inflater.inflate(R.layout.fragment_viewer, container, false);
+        int width = main.size.x;
         textView = (TextView)rootView.findViewById(R.id.textView);
         infoButton = (Button)rootView.findViewById(R.id.infoButton);
         ingredientsButton = (Button)rootView.findViewById(R.id.ingredientsButton);
@@ -68,6 +74,16 @@ public class ViewerFragment extends Fragment {
         prevButton = (Button) rootView.findViewById(R.id.prevButton);
         nextButton = (Button) rootView.findViewById(R.id.nextButton);
         scrollView = (ScrollView) rootView.findViewById(R.id.scrollView);
+
+        if (width >= 2560){
+            textView.setTextSize(40);
+            infoButton.setTextSize(35);
+            ingredientsButton.setTextSize(35);
+            methodButton.setTextSize(29);
+            speakButton.setTextSize(35);
+            prevButton.setTextSize(35);
+            nextButton.setTextSize(35);
+        }
         rec = main.recipe;
         try {
             rec.getTitle();
@@ -194,7 +210,6 @@ public class ViewerFragment extends Fragment {
             else
                 tags = tags.concat(".");
         }
-
         textView.setText(rec.getTitle() + "\n\nPreparation Time: " + rec.getPrepTime() + " mins" +
                 "\n\nCooking Time: " + rec.getCookTime() + " mins" + "\n\nRating: " +
                 rec.getRating() + "/5" + "\n\nServes: " + rec.getServings() +
@@ -210,7 +225,7 @@ public class ViewerFragment extends Fragment {
         String text = "";
 
         for (String s : rec.getIngredients()){
-            text = text.concat(s + "\n\n");
+            text = text.concat(s + "<br><br>");
             String[] words = s.split(" ");
             for(String word : words) {
                 if (word.length() > 0 && Character.isUpperCase(word.charAt(0))) {
@@ -219,7 +234,7 @@ public class ViewerFragment extends Fragment {
             }
         }
         if (display)
-        textView.setText(text);
+        textView.setText(Html.fromHtml(text));
     }
 
     public void getMethod(){
@@ -229,6 +244,9 @@ public class ViewerFragment extends Fragment {
         nextButton.setVisibility(View.VISIBLE);
         speakButton.setVisibility(View.VISIBLE);
         ArrayList<String> steps = rec.getMethodSteps();
+        for (String s : steps){
+            steps.set(steps.indexOf(s), steps.get(steps.indexOf(s)).replaceAll("\n", "<br>"));
+        }
         for (String s : ingredients){
             for (String s2 : rec.getMethodSteps()){
                 if (s2.contains(s) || s2.contains(s.toLowerCase())){
@@ -245,7 +263,7 @@ public class ViewerFragment extends Fragment {
             textView.setText(Html.fromHtml(steps.get(index + 1)));
             index++;
         } else {
-            textView.setText(Html.fromHtml(steps.get(index)));
+            textView.setText(Html.fromHtml(steps.get(index).replaceAll("\n", "<br>")));
         }
     }
 

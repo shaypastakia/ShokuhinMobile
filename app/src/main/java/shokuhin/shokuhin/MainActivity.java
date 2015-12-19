@@ -4,6 +4,7 @@ import android.app.Activity;
 
 import android.app.ActionBar;
 import android.app.FragmentManager;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -21,6 +22,7 @@ public class MainActivity extends Activity
     RecipeListFragment searchFragment = new RecipeListFragment().initialise(0, this);
     ViewerFragment viewerFragment = new ViewerFragment().initialise(1, this);
     public Recipe recipe;
+    Point size = new Point();
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -35,6 +37,7 @@ public class MainActivity extends Activity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindowManager().getDefaultDisplay().getSize(size);
         setContentView(R.layout.activity_main);
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getFragmentManager().findFragmentById(R.id.navigation_drawer);

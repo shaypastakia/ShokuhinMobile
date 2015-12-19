@@ -3,19 +3,25 @@ package shokuhin.shokuhin;
 import android.os.AsyncTask;
 import android.widget.Toast;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 
 /**
  * Created by shayp on 04/10/2015.
  */
-public class RetrieveListTask extends AsyncTask<String, Void, File> {
+public class RetrieveListTask extends AsyncTask<String, Void, ArrayList<String>> {
     InputStream input = null;
     OutputStream output = null;
     HttpURLConnection connection = null;
@@ -25,28 +31,22 @@ public class RetrieveListTask extends AsyncTask<String, Void, File> {
         main = _main;
     }
 
-    protected File doInBackground(String... strings){
+    protected ArrayList<String> doInBackground(String... strings){
         try {
-            URL url = new URL("http://194.83.236.93/~spastakia/Shokuhin/list.hmap");
-            connection = (HttpURLConnection) url.openConnection();
-            connection.connect();
-
-            if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                Toast.makeText(main, "Failed to connect", Toast.LENGTH_LONG).show();
-                throw new Exception("Unable to connect to server");
+            ArrayList<String> temp = new ArrayList<String>();
+            ArrayList<String> temp2 = new ArrayList<String>();
+            Document doc = Jsoup.connect("http://194.83.236.93/~spastakia/Shokuhin/").get();
+            for (Element file : doc.select("a")) {
+                temp.add(file.attr("href"));
             }
 
-            input = connection.getInputStream();
-            output = new FileOutputStream(main.getFilesDir() + "/list.hmap");
-            byte data[] = new byte[4096];
-            int count;
-            while ((count = input.read(data)) != -1) {
-                output.write(data, 0, count);
+            for (String s : temp){
+                if (s.endsWith(".rec"))
+                        temp2.add(s.replaceAll("%20", " ").replaceAll(".rec", ""));
             }
-            output.close();
-            input.close();
-            new File(main.getFilesDir() + "/list.hmap").deleteOnExit();
-            return new File(main.getFilesDir() + "/list.hmap");
+            temp.clear();
+
+            return temp2;
         } catch (Exception e){
             e.printStackTrace();
             return null;
