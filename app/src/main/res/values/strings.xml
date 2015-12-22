@@ -7,5 +7,6 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
-    <string name="action_settings">Open Recipe</string>
+    <string name="action_settings">Title Search</string>
+    <string name="advanced_search">Tags Search</string>
 </resources>

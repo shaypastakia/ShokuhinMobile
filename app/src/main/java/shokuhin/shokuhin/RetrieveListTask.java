@@ -26,9 +26,15 @@ public class RetrieveListTask extends AsyncTask<String, Void, ArrayList<String>>
     OutputStream output = null;
     HttpURLConnection connection = null;
     MainActivity main;
+    String search;
 
     public RetrieveListTask(MainActivity _main){
         main = _main;
+    }
+
+    public RetrieveListTask(MainActivity _main, String _search){
+        main = _main;
+        search = _search;
     }
 
     protected ArrayList<String> doInBackground(String... strings){
@@ -41,8 +47,17 @@ public class RetrieveListTask extends AsyncTask<String, Void, ArrayList<String>>
             }
 
             for (String s : temp){
-                if (s.endsWith(".rec"))
-                        temp2.add(s.replaceAll("%20", " ").replaceAll(".rec", ""));
+                if (s.endsWith(".rec")){
+                    String s2 = s.replaceAll("%20", " ").replaceAll(".rec", "");
+                    if (search != null){
+                        if (s2.toLowerCase().contains(search.toLowerCase()))
+                            temp2.add(s2);
+                    } else {
+                        temp2.add(s2);
+                    }
+
+                }
+
             }
             temp.clear();
 

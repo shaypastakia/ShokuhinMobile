@@ -13,6 +13,7 @@ import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 
 import recipe.Recipe;
 
@@ -37,7 +38,6 @@ public class RetrieveRecipeTask extends AsyncTask<String, Void, Recipe> {
         Recipe recipe = null;
 
         try {
-
             URL url = new URL("http://194.83.236.93/~spastakia/Shokuhin/" + recipes[position].replaceAll(" ", "%20") + ".rec");
             connection = (HttpURLConnection) url.openConnection();
             connection.connect();
@@ -60,6 +60,7 @@ public class RetrieveRecipeTask extends AsyncTask<String, Void, Recipe> {
             ObjectInputStream obj = new ObjectInputStream(buff);
             recipe = (Recipe) obj.readObject();
             obj.close();
+
             return recipe;
         } catch (Exception e){
             e.printStackTrace();

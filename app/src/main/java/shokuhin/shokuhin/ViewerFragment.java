@@ -38,7 +38,7 @@ public class ViewerFragment extends Fragment {
     ScrollView scrollView;
     Recipe rec;
     ArrayList<String> ingredients = new ArrayList<String>();
-    TextToSpeech speech;
+
     boolean autoSpeak = false;
     int index = -1;
 
@@ -50,6 +50,7 @@ public class ViewerFragment extends Fragment {
     private static final String ARG_SECTION_NUMBER = "section_number";
 
     public ViewerFragment() {
+        setRetainInstance(true);
     }
 
     public ViewerFragment initialise(int sectionNumber, MainActivity _main){
@@ -66,6 +67,7 @@ public class ViewerFragment extends Fragment {
         index = -1;
         View rootView = inflater.inflate(R.layout.fragment_viewer, container, false);
         int width = main.size.x;
+        int height = main.size.y;
         textView = (TextView)rootView.findViewById(R.id.textView);
         infoButton = (Button)rootView.findViewById(R.id.infoButton);
         ingredientsButton = (Button)rootView.findViewById(R.id.ingredientsButton);
@@ -75,7 +77,7 @@ public class ViewerFragment extends Fragment {
         nextButton = (Button) rootView.findViewById(R.id.nextButton);
         scrollView = (ScrollView) rootView.findViewById(R.id.scrollView);
 
-        if (width >= 2560){
+        if (width * height >= 4000000){
             textView.setTextSize(40);
             infoButton.setTextSize(35);
             ingredientsButton.setTextSize(35);
@@ -92,14 +94,9 @@ public class ViewerFragment extends Fragment {
             return null;
         }
 
-        speech = new TextToSpeech(main, new TextToSpeech.OnInitListener() {
-            @Override
-            public void onInit(int status) {
-                if(status != TextToSpeech.ERROR) {
-                    speech.setLanguage(Locale.UK);
-                }
-            }
-        });
+
+
+
 
         nextButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -124,11 +121,16 @@ public class ViewerFragment extends Fragment {
                         return;
                     }
 
-                    if (step.length() > speech.getMaxSpeechInputLength()){
-                        speech.speak("Sorry, but the method step is too long for me to read.",
+                    if (step.length() > TextToSpeech.getMaxSpeechInputLength()){
+                        main.speech.speak("Sorry, but the method step is too long for me to read.",
                                 TextToSpeech.QUEUE_FLUSH, null, null);
                     }
-                    speech.speak(step, TextToSpeech.QUEUE_FLUSH, null, null);
+
+                    if (main.firstSpeak){
+                        Toast.makeText(main, "Press and Hold 'Speak' to enable AutoSpeak", Toast.LENGTH_LONG).show();
+                        main.firstSpeak = false;
+                    }
+                    main.speech.speak(step, TextToSpeech.QUEUE_FLUSH, null, null);
                 } catch (Exception e){
                     Toast.makeText(main, "Unable to produce Speech", Toast.LENGTH_SHORT).show();
                 }

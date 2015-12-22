@@ -15,6 +15,7 @@ import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -32,6 +33,7 @@ public class RecipeListFragment extends Fragment {
     ListView listView;
     String[] recipes;
     ArrayList<String> list;
+    String search;
 
     /**
      * The fragment argument representing the section number for this
@@ -40,21 +42,39 @@ public class RecipeListFragment extends Fragment {
     private static final String ARG_SECTION_NUMBER = "section_number";
 
     public RecipeListFragment() {
+        setRetainInstance(true);
     }
 
-    public RecipeListFragment initialise(int sectionNumber, MainActivity _main){
+    public RecipeListFragment initialise(int sectionNumber, MainActivity _main, String _search){
         main = _main;
+        if (_search != null)
+            search = _search;
+
         Bundle args = new Bundle();
         args.putInt(ARG_SECTION_NUMBER, sectionNumber);
         setArguments(args);
 
         try {
-//            new RetrieveListTask(main).execute();
-            //Call RetrieveListTask to retrieve the list.hmap HashMap object file
-            list = new RetrieveListTask(main).execute().get();
+
+            if (search != null && !search.equals(""))
+                list = new RetrieveListTask(main, search).execute().get();
+            else
+                list = new RetrieveListTask(main).execute().get();
         } catch (Exception e){
             e.printStackTrace();
         }
+        return this;
+    }
+
+    public RecipeListFragment initialise(int sectionNumber, MainActivity _main, ArrayList<String> _recipes){
+        main = _main;
+
+        Bundle args = new Bundle();
+        args.putInt(ARG_SECTION_NUMBER, sectionNumber);
+        setArguments(args);
+
+        list = _recipes;
+
         return this;
     }
 
@@ -85,15 +105,11 @@ public class RecipeListFragment extends Fragment {
             public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
                 Recipe recipe;
                 try {
-//                        Toast.makeText(main, "1", Toast.LENGTH_LONG).show();
                     RetrieveRecipeTask task = new RetrieveRecipeTask(main, recipes, position);
                     task.execute();
-                    main.recipe = (Recipe)task.get();
-//                        Toast.makeText(main, "2", Toast.LENGTH_LONG).show();
-//                        Toast.makeText(main, "3", Toast.LENGTH_LONG).show();
-                        main.getFragmentManager().beginTransaction()
-                                .replace(R.id.container, main.viewerFragment)
-                                .commit();
+                    main.recipe = task.get();
+                    main.setViewerFragment();
+                    main.mNavigationDrawerFragment.selectItem(1);
 //                        Toast.makeText(main, "4", Toast.LENGTH_LONG).show();
                 } catch (Exception e) {
                     Toast.makeText(main, "FAILED", Toast.LENGTH_LONG).show();
