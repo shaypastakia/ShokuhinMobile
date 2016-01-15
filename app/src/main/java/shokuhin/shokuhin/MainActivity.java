@@ -7,6 +7,7 @@ import android.app.AlertDialog;
 import android.app.FragmentManager;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Point;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -18,6 +19,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.support.v4.widget.DrawerLayout;
 import android.widget.EditText;
+import android.widget.ShareActionProvider;
 import android.widget.Toast;
 
 import java.io.File;
@@ -39,6 +41,7 @@ public class MainActivity extends Activity
     public TextToSpeech speech;
     String searchTerm;
     public boolean firstSpeak = true;
+    public ShareActionProvider share;
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -73,8 +76,6 @@ public class MainActivity extends Activity
         mNavigationDrawerFragment.setUp(
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
-
-
     }
 
     @Override
@@ -153,15 +154,33 @@ public class MainActivity extends Activity
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+
+
+        // Inflate menu resource file.
+        getMenuInflater().inflate(R.menu.main, menu);
+
+        // Locate MenuItem with ShareActionProvider
+        MenuItem item = menu.findItem(R.id.menu_item_share);
+
+        // Fetch and store ShareActionProvider
+        share = (ShareActionProvider) item.getActionProvider();
+
         if (!mNavigationDrawerFragment.isDrawerOpen()) {
             // Only show items in the action bar relevant to this screen
             // if the drawer is not showing. Otherwise, let the drawer
             // decide what to show in the action bar.
-            getMenuInflater().inflate(R.menu.main, menu);
-            restoreActionBar();
+//            getMenuInflater().inflate(R.menu.main, menu);
+//            restoreActionBar();
             return true;
         }
+
         return super.onCreateOptionsMenu(menu);
+    }
+
+    public void setShareIntent(Intent shareIntent) {
+        if (share != null) {
+            share.setShareIntent(shareIntent);
+        }
     }
 
     @Override
@@ -277,5 +296,13 @@ public class MainActivity extends Activity
         getFragmentManager().beginTransaction()
                 .replace(R.id.container, viewerFragment)
                 .commitAllowingStateLoss();
+    }
+
+
+    @Override
+    public void onBackPressed() {
+        searchTerm = null;
+        searchFragment = null;
+        onNavigationDrawerItemSelected(0);
     }
 }

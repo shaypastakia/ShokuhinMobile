@@ -4,4 +4,9 @@
         android:orderInCategory="100" android:showAsAction="never" />
     <item android:id="@+id/advanced_search" android:title="@string/advanced_search"
         android:orderInCategory="100" android:showAsAction="never" />
+    <item
+        android:id="@+id/menu_item_share"
+        android:showAsAction="always"
+        android:title="Share"
+        android:actionProviderClass="android.widget.ShareActionProvider" />
 </menu>

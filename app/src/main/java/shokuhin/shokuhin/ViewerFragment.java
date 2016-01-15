@@ -3,6 +3,7 @@ package shokuhin.shokuhin;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.os.Bundle;
@@ -15,6 +16,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ScrollView;
+import android.widget.ShareActionProvider;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -89,14 +91,24 @@ public class ViewerFragment extends Fragment {
         rec = main.recipe;
         try {
             rec.getTitle();
+            Intent sendIntent = new Intent("com.google.android.keep");
+            sendIntent.setAction(Intent.ACTION_SEND);
+            sendIntent.putExtra(Intent.EXTRA_SUBJECT, rec.getTitle());
+
+            String temp = "";
+            for (String  s : rec.getIngredients()){
+                if (rec.getIngredients().indexOf(s) != rec.getIngredients().size()-1)
+                   temp = temp.concat(s + "\n");
+                else
+                   temp = temp.concat(s);
+            }
+            sendIntent.putExtra(Intent.EXTRA_TEXT, temp);
+            sendIntent.setType("text/plain");
+            main.setShareIntent(sendIntent);
         } catch (Exception e){
             Toast.makeText(main, "Unable to load Recipe", Toast.LENGTH_LONG).show();
             return null;
         }
-
-
-
-
 
         nextButton.setOnClickListener(new View.OnClickListener() {
             @Override
