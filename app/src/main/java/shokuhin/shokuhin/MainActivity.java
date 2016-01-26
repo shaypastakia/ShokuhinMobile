@@ -56,6 +56,7 @@ public class MainActivity extends Activity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
         if (speech == null) {
             speech = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
                 @Override

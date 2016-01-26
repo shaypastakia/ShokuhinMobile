@@ -1,5 +1,6 @@
 package shokuhin.shokuhin;
 
+import android.content.Context;
 import android.net.http.HttpResponseCache;
 import android.os.AsyncTask;
 import android.widget.Toast;
@@ -46,7 +47,7 @@ public class RetrieveRecipeTask extends AsyncTask<String, Void, Recipe> {
             }
 
             input = connection.getInputStream();
-            output = new FileOutputStream(main.getFilesDir() + recipes[position] + ".rec");
+            output = main.openFileOutput(recipes[position] + ".rec", Context.MODE_PRIVATE);
             byte data[] = new byte[4096];
             int count;
             while ((count = input.read(data)) != -1) {
@@ -55,7 +56,7 @@ public class RetrieveRecipeTask extends AsyncTask<String, Void, Recipe> {
             output.close();
             input.close();
 
-            InputStream inStream = new FileInputStream(main.getFilesDir() + recipes[position] + ".rec");
+            InputStream inStream = main.openFileInput(recipes[position] + ".rec");
             BufferedInputStream buff = new BufferedInputStream(inStream);
             ObjectInputStream obj = new ObjectInputStream(buff);
             recipe = (Recipe) obj.readObject();
