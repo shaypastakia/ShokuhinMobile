@@ -9,4 +9,5 @@
 
     <string name="action_settings">Title Search</string>
     <string name="advanced_search">Tags Search</string>
+    <string name="sync">Sync</string>
 </resources>

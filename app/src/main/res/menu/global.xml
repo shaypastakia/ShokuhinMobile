@@ -3,5 +3,6 @@
         android:orderInCategory="100" android:showAsAction="never" />
     <item android:id="@+id/advanced_search" android:title="@string/advanced_search"
         android:orderInCategory="100" android:showAsAction="never" />
-
+    <item android:id="@+id/sync" android:title="@string/sync"
+        android:orderInCategory="100" android:showAsAction="never" />
 </menu>

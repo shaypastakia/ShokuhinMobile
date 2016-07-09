@@ -1,24 +1,28 @@
 package recipe;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.io.Serializable;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 
 /**
- * 
+ *
  * @author Shaylen Pastakia
  *
  */
 public class Recipe implements Serializable{
 	private static final long serialVersionUID = -800402407141475554L;
-	
+
 	public static final int BREAKFAST = 0;
 	public static final int LUNCH = 1;
 	public static final int DINNER = 2;
 	public static final int DESSERT = 3;
 	public static final int SNACK = 4;
 	public static final int GENERAL = 5;
-	
+
 	private String title; //Primary Key - will be used as the file name
 	private ArrayList<String> ingredients = new ArrayList<String>(); //List of Ingredients
 	private ArrayList<String> methodSteps = new ArrayList<String>(); //List of steps in the method
@@ -28,15 +32,43 @@ public class Recipe implements Serializable{
 	private int cookTime; //The amount of cooking time for the dish in mins (add to prepTime for Total Time)
 	private int rating = 0; //The user's rating for the dish. Assert value between 0-5, where 0 is no rating applied
 	private int servings; //The number of servings this Recipe caters for
-	
-	private Date lastModifiedDate; //The Date this recipe was last modified. Used for synchronisation.
-	
-	public Date getLastModifiedDate() {
-		return lastModifiedDate;
+
+	private Timestamp lastModificationDate; //The SQL compatible date, for synchronisation.
+
+	//Annotations based on 'peeskillet' in http://stackoverflow.com/questions/31094354/jersey-no-suitable-constructor-found-for-type-simple-type-class-thing-can-n
+	/**
+	 * Create a full recipe
+	 * <br>
+	 * Populate every field when creating a new recipe
+	 */
+	@JsonCreator
+	public Recipe (@JsonProperty("title") String title,@JsonProperty("ingredients") ArrayList<String> ingredients,@JsonProperty("methodSteps") ArrayList<String> methodSteps,
+				   @JsonProperty("course") int course, @JsonProperty("tags") ArrayList<String> tags, @JsonProperty("prepTime") int prepTime,
+				   @JsonProperty("cookTime") int cookTime, @JsonProperty("rating") int rating, @JsonProperty("servings") int servings){
+		this.title = title;
+		this.ingredients = ingredients;
+		this.methodSteps = methodSteps;
+		this.course = course;
+		this.tags = tags;
+		this.prepTime = prepTime;
+		this.cookTime = cookTime;
+		this.rating = rating;
+		this.servings = servings;
+		this.lastModificationDate = new Timestamp(new Date().getTime());
 	}
 
-	public void setLastModifiedDate(Date lastModified) {
-		this.lastModifiedDate = lastModified;
+	public Timestamp getLastModificationDate() {
+		return lastModificationDate;
+	}
+
+	/**
+	 * Sets the date of a Recipe
+	 * @param lastModification The date the recipe was last modified.
+	 * <br>
+	 * Use the ridiculous value of: Timestamp.valueOf(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()))
+	 */
+	public void setLastModificationDate(Timestamp lastModification) {
+		this.lastModificationDate = lastModification;
 	}
 
 	/**
@@ -45,9 +77,9 @@ public class Recipe implements Serializable{
 	 */
 	public Recipe(String title) {
 		this.title = title;
-		this.lastModifiedDate = new Date();
+		this.lastModificationDate = new Timestamp(new Date().getTime());
 	}
-	
+
 	public String getTitle() {
 		return title;
 	}
