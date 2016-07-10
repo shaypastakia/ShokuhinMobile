@@ -12,6 +12,7 @@ import android.graphics.Point;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.speech.tts.TextToSpeech;
 import android.text.InputType;
 import android.util.Log;
@@ -21,6 +22,8 @@ import android.support.v4.widget.DrawerLayout;
 import android.widget.EditText;
 import android.widget.ShareActionProvider;
 import android.widget.Toast;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -37,13 +40,15 @@ import java.util.Arrays;
 import java.util.Locale;
 
 import recipe.Recipe;
+import recipe.RecipeMethodsMobile;
+import recipe.RequestURL;
 
 
 public class MainActivity extends Activity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
 
     MainActivity main = this;
-    RecipeListFragment searchFragment = new RecipeListFragment().initialise(0, this, (String)null);
+    RecipeListFragment searchFragment;// = new RecipeListFragment().initialise(0, this, (String)null);
     ViewerFragment viewerFragment = new ViewerFragment().initialise(1, this);
     public Recipe recipe;
     Point size = new Point();
@@ -51,6 +56,8 @@ public class MainActivity extends Activity
     String searchTerm;
     public boolean firstSpeak = true;
     public ShareActionProvider share;
+    public File dir;
+    public static String url = "192.168.1.147";
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -65,7 +72,10 @@ public class MainActivity extends Activity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
+
+        searchFragment = new RecipeListFragment().initialise(0, this, (String) null);
+
+        dir = getFilesDir();
         if (speech == null) {
             speech = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
                 @Override
