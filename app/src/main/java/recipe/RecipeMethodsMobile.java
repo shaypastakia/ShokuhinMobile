@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
@@ -19,8 +18,8 @@ import java.net.URL;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
+import java.util.TreeMap;
 
 import shokuhin.shokuhin.MainActivity;
 
@@ -57,10 +56,29 @@ public class RecipeMethodsMobile {
         return responseStr;
     }
 
-    public static HashMap<Recipe, String> getServerRecipes(MainActivity main, RequestURL _url){
-        HashMap<Recipe, String> temp = new HashMap<Recipe, String>();
+    public static Recipe requestRecipe (MainActivity main, String title){
+        //Request a Recipe, and parse it from JSON
+        String responseStr;
+        RequestURL req = new RequestURL("192.168.1.147");
+        req.addParameter("type", "REQUEST");
+        req.addParameter("recipe", title);
+
+        responseStr = RecipeMethodsMobile.request(req);
+        ObjectMapper mapper = new ObjectMapper();
         try {
-            HashMap<String, Timestamp> localRecs = RecipeMethodsMobile.getLastModifiedDates(main);
+            Recipe r = mapper.readValue(responseStr, Recipe.class);
+            return  r;
+        } catch (Exception e){
+            e.printStackTrace();
+            Log.d("RequestRecipe", e.getMessage());
+            return null;
+        }
+    }
+
+    public static TreeMap<String, String> getServerRecipes(MainActivity main, RequestURL _url){
+        TreeMap<String, String> temp = new TreeMap<String, String>();
+        try {
+            TreeMap<String, Timestamp> localRecs = RecipeMethodsMobile.getLastModifiedDates(main);
             ObjectMapper mapper = new ObjectMapper();
             String json = mapper.writeValueAsString(localRecs);
 
@@ -68,19 +86,16 @@ public class RecipeMethodsMobile {
             HttpURLConnection connection = getConnection(_url);
 
 
-//            connection.setRequestProperty("Content-Type", "application/json");
+            //Send the local times to the server
+            connection.setRequestProperty("Content-Type", "text/plain");
 //            connection.setRequestProperty("charset", "utf-8");
 //            connection.setRequestProperty("Content-Length", "" + Integer.toString(json.getBytes().length));
-//            BufferedWriter bufWrite = new BufferedWriter(new OutputStreamWriter((connection.getOutputStream()), "UTF-8"));
-//            bufWrite.write(json);
-//            bufWrite.flush();
-//            bufWrite.close();
+            BufferedWriter bufWrite = new BufferedWriter(new OutputStreamWriter((connection.getOutputStream()), "UTF-8"));
+            bufWrite.write(json);
+            bufWrite.flush();
+            bufWrite.close();
 
-            DataOutputStream outStream = new DataOutputStream(connection.getOutputStream());
-            outStream.writeUTF(json);
-            outStream.flush();
-            outStream.close();
-
+            //Receive the NEW UPDATE DELETE list from the server
             BufferedReader bufRead = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8"));
             String line;
             StringBuffer response = new StringBuffer();
@@ -90,7 +105,7 @@ public class RecipeMethodsMobile {
             }
             bufRead.close();
             String responseStr = response.toString();
-
+            temp = mapper.readValue(responseStr, TreeMap.class);
             connection.disconnect();
             return temp;
         } catch (Exception e) {
@@ -134,7 +149,7 @@ public class RecipeMethodsMobile {
 
     public static Recipe readRecipe(MainActivity main, String title){
         try {
-            FileInputStream fis = main.openFileInput(title);
+            FileInputStream fis = main.openFileInput(title + ".rec");
             ObjectInputStream is = new ObjectInputStream(fis);
             Recipe rec = (Recipe) is.readObject();
             is.close();
@@ -146,10 +161,14 @@ public class RecipeMethodsMobile {
         }
     }
 
-    public static HashMap<String, Timestamp> getLastModifiedDates(MainActivity main){
-        HashMap<String, Timestamp> temp = new HashMap<String, Timestamp>();
+    public static boolean deleteRecipe(MainActivity main, String title){
+        return main.deleteFile(title + ".rec");
+    }
+
+    public static TreeMap<String, Timestamp> getLastModifiedDates(MainActivity main){
+        TreeMap<String, Timestamp> temp = new TreeMap<String, Timestamp>();
         for (String s : main.getFilesDir().list()){
-            Recipe r = readRecipe(main, s);
+            Recipe r = readRecipe(main, s.replaceAll(".rec", ""));
             temp.put(r.getTitle(), r.getLastModificationDate());
         }
 

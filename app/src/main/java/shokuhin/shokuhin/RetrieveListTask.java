@@ -2,32 +2,13 @@ package shokuhin.shokuhin;
 
 import android.os.AsyncTask;
 import android.util.Log;
-import android.widget.Toast;
 
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
 
-import recipe.Recipe;
 import recipe.RecipeMethodsMobile;
-import recipe.RequestURL;
 
 /**
  * Created by shayp on 04/10/2015.

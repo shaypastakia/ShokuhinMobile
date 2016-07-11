@@ -1,8 +1,7 @@
 package shokuhin.shokuhin;
 
-import android.app.Activity;
-
 import android.app.ActionBar;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.FragmentManager;
 import android.content.Context;
@@ -10,38 +9,22 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Point;
 import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.os.StrictMode;
 import android.speech.tts.TextToSpeech;
+import android.support.v4.widget.DrawerLayout;
 import android.text.InputType;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.support.v4.widget.DrawerLayout;
 import android.widget.EditText;
 import android.widget.ShareActionProvider;
 import android.widget.Toast;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import org.apache.http.client.HttpClient;
-import org.apache.http.impl.client.DefaultHttpClient;
-
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
 
 import recipe.Recipe;
-import recipe.RecipeMethodsMobile;
-import recipe.RequestURL;
 
 
 public class MainActivity extends Activity
@@ -309,7 +292,11 @@ public class MainActivity extends Activity
             entry.show();
         } else if (item.getTitle() != null && item.getTitle().equals("Sync")) {
             try {
-               new SyncTask(this).execute().get();
+               if (new SyncTask(this).execute().get()){
+                   Toast.makeText(MainActivity.this, "Sync Complete!", Toast.LENGTH_SHORT).show();
+               } else {
+                   Toast.makeText(MainActivity.this, "Sync Error :'(", Toast.LENGTH_LONG).show();
+               }
             } catch (Exception e){
                 e.printStackTrace();
             }
