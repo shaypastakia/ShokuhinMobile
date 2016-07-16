@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
@@ -135,7 +136,8 @@ public class RecipeMethodsMobile {
 
     public static boolean writeRecipe(MainActivity main, Recipe r){
         try {
-            FileOutputStream fos = main.openFileOutput(r.getTitle() + ".rec", Context.MODE_PRIVATE);
+//            FileOutputStream fos = main.openFileOutput(r.getTitle() + ".rec", Context.MODE_PRIVATE);
+            FileOutputStream fos = new FileOutputStream(new File(main.getExternalFilesDir(null), r.getTitle() + ".rec"));
             ObjectOutputStream os = new ObjectOutputStream(fos);
             os.writeObject(r);
             os.close();
@@ -149,7 +151,8 @@ public class RecipeMethodsMobile {
 
     public static Recipe readRecipe(MainActivity main, String title){
         try {
-            FileInputStream fis = main.openFileInput(title + ".rec");
+//            FileInputStream fis = main.openFileInput(title + ".rec");
+            FileInputStream fis = new FileInputStream(new File(main.getExternalFilesDir(null), title + ".rec"));
             ObjectInputStream is = new ObjectInputStream(fis);
             Recipe rec = (Recipe) is.readObject();
             is.close();
@@ -162,12 +165,21 @@ public class RecipeMethodsMobile {
     }
 
     public static boolean deleteRecipe(MainActivity main, String title){
-        return main.deleteFile(title + ".rec");
+//        return main.deleteFile(title + ".rec");
+
+        File file = new File(main.getExternalFilesDir(null), title + ".rec");
+        if (file.delete())
+            return true;
+        else {
+            file.deleteOnExit();
+            return false;
+        }
     }
 
     public static TreeMap<String, Timestamp> getLastModifiedDates(MainActivity main){
         TreeMap<String, Timestamp> temp = new TreeMap<String, Timestamp>();
-        for (String s : main.getFilesDir().list()){
+//        for (String s : main.getFilesDir().list()){
+        for (String s : main.getExternalFilesDir(null).list()){
             Recipe r = readRecipe(main, s.replaceAll(".rec", ""));
             temp.put(r.getTitle(), r.getLastModificationDate());
         }
@@ -176,7 +188,8 @@ public class RecipeMethodsMobile {
     }
 
     public static ArrayList<String> getRecipeFileNames(MainActivity main){
-        List<String> files = Arrays.asList(main.getFilesDir().list());
+//        List<String> files = Arrays.asList(main.getFilesDir().list());
+        List<String> files = Arrays.asList(main.getExternalFilesDir(null).list());
         ArrayList<String> recs = new ArrayList<String>();
         for (String s : files){
             s = s.replaceAll(".rec", "");
