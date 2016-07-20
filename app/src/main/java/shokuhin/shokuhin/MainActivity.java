@@ -94,8 +94,7 @@ public class MainActivity extends Activity
         }
     }
 
-    public
-    boolean deleteDir(File dir) {
+    public boolean deleteDir(File dir) {
         if (dir != null && dir.isDirectory()) {
             String[] children = dir.list();
             for (int i = 0; i < children.length; i++) {
@@ -291,15 +290,7 @@ public class MainActivity extends Activity
 
             entry.show();
         } else if (item.getTitle() != null && item.getTitle().equals("Sync")) {
-            try {
-               if (new SyncTask(this).execute().get()){
-                   Toast.makeText(MainActivity.this, "Sync Complete!", Toast.LENGTH_SHORT).show();
-               } else {
-                   Toast.makeText(MainActivity.this, "Sync Error :'(", Toast.LENGTH_LONG).show();
-               }
-            } catch (Exception e){
-                e.printStackTrace();
-            }
+            sync();
         }
 
         return super.onOptionsItemSelected(item);
@@ -317,5 +308,17 @@ public class MainActivity extends Activity
         searchTerm = null;
         searchFragment = null;
         onNavigationDrawerItemSelected(0);
+    }
+
+    public void sync(){
+        try {
+            if (new SyncTask(this).execute().get()){
+                Toast.makeText(MainActivity.this, "Sync Complete!", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(MainActivity.this, "Sync Error :'(", Toast.LENGTH_LONG).show();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

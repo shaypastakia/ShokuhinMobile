@@ -3,6 +3,7 @@ package shokuhin.shokuhin;
 import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,17 +12,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.concurrent.ConcurrentHashMap;
 
 import recipe.Recipe;
 
@@ -84,6 +76,18 @@ public class RecipeListFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         listView = (ListView)rootView.findViewById(R.id.listView);
+
+//      As per: http://antonioleiva.com/swiperefreshlayout/
+        final SwipeRefreshLayout refresh;
+        refresh = (SwipeRefreshLayout) rootView.findViewById(R.id.swiperefresh);
+        refresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                main.sync();
+                refresh.setRefreshing(false);
+            }
+        });
+
         int width = main.size.x;
         try {
             recipes = new String[list.size()];

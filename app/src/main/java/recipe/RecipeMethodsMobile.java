@@ -5,6 +5,8 @@ import android.util.Log;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.apache.http.params.CoreProtocolPNames;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -126,6 +128,9 @@ public class RecipeMethodsMobile {
             connection.setDoInput(true);
             connection.setDoOutput(true);
             connection.setRequestProperty("User-Agent", "Mozilla/5.0 ( compatible ) ");
+            String prop = System.getProperty("http.agent");
+            connection.setRequestProperty("User-Agent", prop);
+
             connection.setRequestProperty("Accept", "*/*");
             return connection;
         } catch (Exception e){
