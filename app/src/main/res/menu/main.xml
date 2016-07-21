@@ -1,11 +1,17 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" tools:context=".MainActivity">
-    <item android:id="@+id/action_settings" android:title="@string/action_settings"
+    <item android:id="@+id/title_search" android:title="@string/action_settings"
         android:orderInCategory="100" android:showAsAction="never" />
     <item android:id="@+id/advanced_search" android:title="@string/advanced_search"
         android:orderInCategory="100" android:showAsAction="never" />
     <item android:id="@+id/sync" android:title="@string/sync"
+        android:icon="@android:drawable/stat_notify_sync"
         android:orderInCategory="100" android:showAsAction="never" />
+    <item
+        android:id="@+id/voice"
+        android:showAsAction="ifRoom"
+        android:icon="@android:drawable/ic_btn_speak_now"
+        android:title="" />
     <item
         android:id="@+id/menu_item_share"
         android:showAsAction="always"

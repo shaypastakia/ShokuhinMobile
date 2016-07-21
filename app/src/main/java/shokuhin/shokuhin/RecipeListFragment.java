@@ -3,6 +3,7 @@ package shokuhin.shokuhin;
 import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -83,8 +84,14 @@ public class RecipeListFragment extends Fragment {
         refresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                main.sync();
-                refresh.setRefreshing(false);
+                new Handler().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        main.sync();
+                        refresh.setRefreshing(false);
+                    }
+                });
+
             }
         });
 

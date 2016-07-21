@@ -17,6 +17,10 @@ public class SyncTask extends AsyncTask<String, Void, Boolean> {
         public SyncTask(MainActivity main) {this.main = main;}
 
         protected Boolean doInBackground(String... params) {
+            if (!RecipeMethodsMobile.isServerOnline(new RequestURL(MainActivity.url))){
+                return false;
+            }
+
             //Based on example at http://www.appifiedtech.net/2015/06/13/android-http-request-example/
             RequestURL urlTime = new RequestURL(MainActivity.url);
             TreeMap<String, String> results = RecipeMethodsMobile.getServerRecipes(main, new RequestURL(MainActivity.url));

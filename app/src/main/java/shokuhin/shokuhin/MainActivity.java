@@ -4,12 +4,15 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.FragmentManager;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Point;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
 import android.support.v4.widget.DrawerLayout;
 import android.text.InputType;
@@ -23,6 +26,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.StringTokenizer;
 
 import recipe.Recipe;
 
@@ -191,7 +195,7 @@ public class MainActivity extends Activity
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
 
-        if (item.getTitle() != null && item.getTitle().equals("Title Search")) {
+        if (item.getItemId() == R.id.title_search) {
 
             //Text Entry Dialog based on Aaron, http://stackoverflow.com/questions/10903754/input-text-dialog-android
             AlertDialog.Builder entry = new AlertDialog.Builder(this);
@@ -229,7 +233,7 @@ public class MainActivity extends Activity
             });
 
             entry.show();
-        } else if (item.getTitle() != null && item.getTitle().equals("Tags Search")) {
+        } else if (item.getItemId() == R.id.advanced_search) {
             ConnectivityManager connMgr = (ConnectivityManager)
                     getSystemService(Context.CONNECTIVITY_SERVICE);
 
@@ -289,11 +293,140 @@ public class MainActivity extends Activity
             });
 
             entry.show();
-        } else if (item.getTitle() != null && item.getTitle().equals("Sync")) {
-            sync();
+        } else if (item.getItemId() == R.id.sync) {
+            new Handler().post(new Runnable() {
+                @Override
+                public void run() {
+                    sync();
+                }
+            });
+
+        } else if (item.getItemId() == R.id.voice) {
+            new Handler().post(new Runnable() {
+                @Override
+                public void run() {
+//                  As per: http://www.androidhive.info/2014/07/android-speech-to-text-tutorial/
+                    Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+                    intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                            RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+                    intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
+                    intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "What would you like to search for?");
+                    try {
+                        startActivityForResult(intent, 100);
+                    } catch (ActivityNotFoundException a) {
+                        Toast.makeText(getApplicationContext(), "Failed",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    //As per: http://www.androidhive.info/2014/07/android-speech-to-text-tutorial/
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        switch (requestCode) {
+            case 100: {
+                if (resultCode == RESULT_OK && null != data) {
+                    ArrayList<String> result = data
+                            .getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+                    //PROCESS STRING
+                    ArrayList<String> recipes = new ArrayList<String>();
+                    StringTokenizer st = new StringTokenizer(result.get(0));
+                    ArrayList<String> words = new ArrayList<String>();
+
+                    while (st.hasMoreTokens()) {
+                        words.add(st.nextToken().toLowerCase());
+                    }
+
+                    Toast.makeText(MainActivity.this, result.get(0), Toast.LENGTH_SHORT).show();
+
+                    //If a recipe contains an ingredient
+                    if (words.contains("contains") || words.contains("containing")){
+                        int index;
+                        if (words.contains("contains"))
+                            index = words.indexOf("contains");
+                        else
+                            index = words.indexOf("containing");
+                        String term = "";
+                        for (int i = index + 1; i < words.size(); i++){
+                            term += words.get(i);
+                        }
+                        try {
+                            for (Recipe r : new RetrieveAllRecipesTask(main).execute().get()) {
+                                for (String s : r.getIngredients()){
+                                    if (s.toLowerCase().contains(term.toLowerCase())){
+                                        recipes.add(r.getTitle());
+                                        break;
+                                    }
+                                }
+                            }
+                            speech.speak("Here are recipes containing " + term + " in their ingredients", TextToSpeech.QUEUE_FLUSH, null, null);
+                        } catch (Exception e){
+                            e.printStackTrace();
+                            Toast.makeText(MainActivity.this, "Unable to find recipes", Toast.LENGTH_SHORT).show();
+                        }
+                    } else if (words.contains("tagged")){
+                        int index;
+
+                        if (words.contains("with"))
+                            index = words.indexOf("with");
+                        else
+                            index = words.indexOf("tagged");
+
+                        String term = "";
+                        for (int i = index + 1; i < words.size(); i++){
+                            term += words.get(i);
+                        }
+
+                        try {
+                            for (Recipe r : new RetrieveAllRecipesTask(main).execute().get()) {
+                                for (String s : r.getTags()){
+                                    if (s.toLowerCase().contains(term.toLowerCase())){
+                                        recipes.add(r.getTitle());
+                                        break;
+                                    }
+                                }
+                            }
+                            speech.speak("Here are recipes tagged with " + term, TextToSpeech.QUEUE_FLUSH, null, null);
+                        } catch (Exception e){
+                            e.printStackTrace();
+                            Toast.makeText(MainActivity.this, "Unable to find recipes", Toast.LENGTH_SHORT).show();
+                        }
+                    } else if (words.contains("entitled")){
+                        int index = words.indexOf("entitled");
+                        String term = "";
+                        for (int i = index + 1; i < words.size(); i++){
+                            term += words.get(i);
+                        }
+                        try {
+                            for (Recipe r : new RetrieveAllRecipesTask(main).execute().get()) {
+                                    if (r.getTitle().toLowerCase().contains(term.toLowerCase())){
+                                        recipes.add(r.getTitle());
+                                    }
+                                }
+                            speech.speak("Here are recipes containing " + term + " in the title", TextToSpeech.QUEUE_FLUSH, null, null);
+                        } catch (Exception e){
+                            e.printStackTrace();
+                            Toast.makeText(MainActivity.this, "Unable to find recipes", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        Toast.makeText(MainActivity.this, "Unable to understand " + result.get(0), Toast.LENGTH_SHORT).show();
+                        speech.speak("Unable to understand " + result.get(0), TextToSpeech.QUEUE_FLUSH, null, null);
+                        return;
+                    }
+                    //END PROCESS
+                    searchFragment = new RecipeListFragment().initialise(0, main, recipes);
+                    onNavigationDrawerItemSelected(0);
+                }
+                break;
+            }
+
+        }
     }
 
     public void setViewerFragment() {

@@ -2,6 +2,7 @@ package recipe;
 
 import android.content.Context;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -123,11 +124,12 @@ public class RecipeMethodsMobile {
             HttpURLConnection connection = null;
             url = new URL(dataUrl);
             connection = (HttpURLConnection) url.openConnection();
+            connection.setConnectTimeout(3000);
             connection.setRequestMethod("POST");
             connection.setUseCaches(false);
             connection.setDoInput(true);
             connection.setDoOutput(true);
-            connection.setRequestProperty("User-Agent", "Mozilla/5.0 ( compatible ) ");
+//            connection.setRequestProperty("User-Agent", "Mozilla/5.0 ( compatible ) ");
             String prop = System.getProperty("http.agent");
             connection.setRequestProperty("User-Agent", prop);
 
@@ -135,6 +137,18 @@ public class RecipeMethodsMobile {
             return connection;
         } catch (Exception e){
             return null;
+        }
+    }
+
+    public static boolean isServerOnline(RequestURL urlString){
+        try {
+            urlString.addParameter("type", "ONLINE");
+            if (request(urlString) == null)
+                return false;
+            else
+                return true;
+        } catch (Exception e){
+            return false;
         }
     }
 
