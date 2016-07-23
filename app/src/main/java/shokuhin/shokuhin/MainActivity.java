@@ -5,24 +5,26 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.FragmentManager;
 import android.content.ActivityNotFoundException;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Point;
-import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
 import android.support.v4.widget.DrawerLayout;
 import android.text.InputType;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ShareActionProvider;
 import android.widget.Toast;
 
 import java.io.File;
+import java.lang.reflect.Array;
+import java.sql.Struct;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
@@ -33,6 +35,12 @@ import recipe.Recipe;
 
 public class MainActivity extends Activity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
+
+    public static final int CONTAIN = 0;
+    public static final int ENTITLED = 1;
+    public static final int TAGGED = 2;
+    public static final int COUNT = 3;
+    public static final int UNCOOKED = 4;
 
     MainActivity main = this;
     RecipeListFragment searchFragment;// = new RecipeListFragment().initialise(0, this, (String)null);
@@ -234,13 +242,13 @@ public class MainActivity extends Activity
 
             entry.show();
         } else if (item.getItemId() == R.id.advanced_search) {
-            ConnectivityManager connMgr = (ConnectivityManager)
-                    getSystemService(Context.CONNECTIVITY_SERVICE);
-
-            if (!connMgr.getNetworkInfo(ConnectivityManager.TYPE_WIFI).isConnected()){
-                Toast.makeText(main, "Feature unavailable using 3G.", Toast.LENGTH_SHORT).show();
-                return false;
-            }
+//            ConnectivityManager connMgr = (ConnectivityManager)
+//                    getSystemService(Context.CONNECTIVITY_SERVICE);
+//
+//            if (!connMgr.getNetworkInfo(ConnectivityManager.TYPE_WIFI).isConnected()){
+//                Toast.makeText(main, "Feature unavailable using 3G.", Toast.LENGTH_SHORT).show();
+//                return false;
+//            }
 
             //Text Entry Dialog based on Aaron, http://stackoverflow.com/questions/10903754/input-text-dialog-android
             AlertDialog.Builder entry = new AlertDialog.Builder(this);
@@ -324,109 +332,252 @@ public class MainActivity extends Activity
         return super.onOptionsItemSelected(item);
     }
 
-    //As per: http://www.androidhive.info/2014/07/android-speech-to-text-tutorial/
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        switch (requestCode) {
-            case 100: {
-                if (resultCode == RESULT_OK && null != data) {
-                    ArrayList<String> result = data
-                            .getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
-                    //PROCESS STRING
-                    ArrayList<String> recipes = new ArrayList<String>();
-                    StringTokenizer st = new StringTokenizer(result.get(0));
-                    ArrayList<String> words = new ArrayList<String>();
+        //If the request code isn't for Voice Commands, exit.
+        if (requestCode != 100)
+            return;
 
-                    while (st.hasMoreTokens()) {
-                        words.add(st.nextToken().toLowerCase());
-                    }
+        //Store the phrase spoken, as well as a list of recipes on the device.
+        String speech = "";
+        ArrayList<Recipe> recipes = null;
 
-                    Toast.makeText(MainActivity.this, result.get(0), Toast.LENGTH_SHORT).show();
+        ArrayList<String> results = new ArrayList<String>();
+        //Store the function, as specified in 'speech'.
+        int function;
 
-                    //If a recipe contains an ingredient
-                    if (words.contains("contains") || words.contains("containing")){
-                        int index;
-                        if (words.contains("contains"))
-                            index = words.indexOf("contains");
-                        else
-                            index = words.indexOf("containing");
-                        String term = "";
-                        for (int i = index + 1; i < words.size(); i++){
-                            term += words.get(i);
-                        }
-                        try {
-                            for (Recipe r : new RetrieveAllRecipesTask(main).execute().get()) {
-                                for (String s : r.getIngredients()){
-                                    if (s.toLowerCase().contains(term.toLowerCase())){
-                                        recipes.add(r.getTitle());
-                                        break;
-                                    }
-                                }
-                            }
-                            speech.speak("Here are recipes containing " + term + " in their ingredients", TextToSpeech.QUEUE_FLUSH, null, null);
-                        } catch (Exception e){
-                            e.printStackTrace();
-                            Toast.makeText(MainActivity.this, "Unable to find recipes", Toast.LENGTH_SHORT).show();
-                        }
-                    } else if (words.contains("tagged")){
-                        int index;
-
-                        if (words.contains("with"))
-                            index = words.indexOf("with");
-                        else
-                            index = words.indexOf("tagged");
-
-                        String term = "";
-                        for (int i = index + 1; i < words.size(); i++){
-                            term += words.get(i);
-                        }
-
-                        try {
-                            for (Recipe r : new RetrieveAllRecipesTask(main).execute().get()) {
-                                for (String s : r.getTags()){
-                                    if (s.toLowerCase().contains(term.toLowerCase())){
-                                        recipes.add(r.getTitle());
-                                        break;
-                                    }
-                                }
-                            }
-                            speech.speak("Here are recipes tagged with " + term, TextToSpeech.QUEUE_FLUSH, null, null);
-                        } catch (Exception e){
-                            e.printStackTrace();
-                            Toast.makeText(MainActivity.this, "Unable to find recipes", Toast.LENGTH_SHORT).show();
-                        }
-                    } else if (words.contains("entitled")){
-                        int index = words.indexOf("entitled");
-                        String term = "";
-                        for (int i = index + 1; i < words.size(); i++){
-                            term += words.get(i);
-                        }
-                        try {
-                            for (Recipe r : new RetrieveAllRecipesTask(main).execute().get()) {
-                                    if (r.getTitle().toLowerCase().contains(term.toLowerCase())){
-                                        recipes.add(r.getTitle());
-                                    }
-                                }
-                            speech.speak("Here are recipes containing " + term + " in the title", TextToSpeech.QUEUE_FLUSH, null, null);
-                        } catch (Exception e){
-                            e.printStackTrace();
-                            Toast.makeText(MainActivity.this, "Unable to find recipes", Toast.LENGTH_SHORT).show();
-                        }
-                    } else {
-                        Toast.makeText(MainActivity.this, "Unable to understand " + result.get(0), Toast.LENGTH_SHORT).show();
-                        speech.speak("Unable to understand " + result.get(0), TextToSpeech.QUEUE_FLUSH, null, null);
-                        return;
-                    }
-                    //END PROCESS
-                    searchFragment = new RecipeListFragment().initialise(0, main, recipes);
-                    onNavigationDrawerItemSelected(0);
-                }
-                break;
+        //If the results were properly captured, continue.
+        //Assign the speech and a list of all Recipes to variables.
+        if (resultCode == RESULT_OK && null != data) {
+            ArrayList<String> result = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+            speech = result.get(0).toLowerCase();
+            try {
+                recipes = new RetrieveAllRecipesTask(main).execute().get();
+            } catch (Exception e) {
+                e.printStackTrace();
+                Toast.makeText(MainActivity.this, "Unable to retrieve recipes. " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                return;
             }
-
+        } else {
+            Toast.makeText(MainActivity.this, "Unable to process Voice Command", Toast.LENGTH_SHORT).show();
+            return;
         }
+
+        //At this point, Speech and Recipes are assigned.
+        //Establish the function, and assign it to 'function'.
+        String query = "";
+
+        if (speech.contains("contain")) {
+            function = CONTAIN;
+        } else if (speech.contains("entitled")) {
+            function = ENTITLED;
+        } else if (speech.contains("tagged")) {
+            function = TAGGED;
+        } else if (speech.contains("haven't")) {
+            function = UNCOOKED;
+            try {
+                for (Recipe r : new RetrieveAllRecipesTask(main).execute().get()) {
+                    if (r.getRating() == 0) {
+                        results.add(r.getTitle());
+                    }
+                }
+                speak("Here are recipes you haven't cooked yet");
+            } catch (Exception e) {
+                e.printStackTrace();
+                Toast.makeText(MainActivity.this, "Unable to find recipes", Toast.LENGTH_SHORT).show();
+            }
+        }else if (speech.contains("many")){ //Special Case
+            function = COUNT;
+            speak("There are " + recipes.size() + " recipes on this device");
+            return;
+        } else {
+            speak("Unable to recognise " + speech);
+            return;
+        }
+
+        //For the CONTAIN, ENTITLED, and TAGGED functions, elicit a Query.
+        query = getQuery(function, speech);
+
+        //At this point, COUNT and UNCOOKED have been completed.
+        //CONTAIN, ENTITLED, and TAGGED require further processing.
+        //It is now "function" and "Query" being processed.
+
+        //First, split the Query by AND.
+        ArrayList<String> terms = new ArrayList<String>();
+        if (!query.contains("and"))
+            terms.add(query);
+        else {
+            String[] tokens = query.split("and");
+            terms.addAll(Arrays.asList(tokens));
+            int i = 0;
+            for (String s : terms){
+                i = terms.indexOf(s);
+                terms.set(i, s.trim());
+            }
+        }
+
+        //'terms' now provides a list of search terms.
+        //Process the recipes with the terms, and elicit the results.
+        String phrase = "Here are recipes containing ";
+        if (terms.size() == 1){
+            phrase = phrase.concat(terms.get(0));
+        } else {
+            for (String s : terms){
+                phrase = phrase.concat(s);
+                if (terms.indexOf(s) < terms.size()-1)
+                    phrase = phrase.concat(", ");
+            }
+        }
+        switch (function){
+            case CONTAIN:
+                results = contain(recipes, terms);
+                phrase = phrase.concat(" in their ingredients");
+                break;
+
+            case ENTITLED:
+                results = entitled(recipes, terms);
+                phrase = phrase.concat(" in their title");
+                break;
+
+            case  TAGGED:
+                results = tagged(recipes, terms);
+                phrase = phrase.concat(" in their tags");
+                break;
+        }
+
+        //Results are passed into the "results" ArrayList, and these are then processed.
+        searchFragment = new RecipeListFragment().initialise(0, main, results);
+        onNavigationDrawerItemSelected(0);
+        speak(phrase);
+    }
+
+    private ArrayList<String> tagged(ArrayList<Recipe> recipes, ArrayList<String> terms){
+        ArrayList<String> results = new ArrayList<String>();
+        ArrayList<Recipe> temp = new ArrayList<Recipe>();
+        temp.addAll(recipes);
+
+        for (String s : terms){
+            for (Recipe r : recipes){
+                if (!searchHelper(r.getTags(), s))
+                    temp.remove(r);
+            }
+        }
+
+        for (Recipe r : temp)
+            results.add(r.getTitle());
+
+        return results;
+    }
+
+    private ArrayList<String> contain(ArrayList<Recipe> recipes, ArrayList<String> terms){
+        ArrayList<String> results = new ArrayList<String>();
+        ArrayList<Recipe> temp = new ArrayList<Recipe>();
+        temp.addAll(recipes);
+
+        for (String s : terms){
+            for (Recipe r : recipes){
+                if (!searchHelper(r.getIngredients(), s))
+                    temp.remove(r);
+            }
+        }
+
+        for (Recipe r : temp)
+            results.add(r.getTitle());
+
+        return results;
+    }
+
+    //Aid the CONTAIN and TAGGED searches
+    private boolean searchHelper(ArrayList<String> list, String term){
+        for (String s : list){
+            if (s.toLowerCase().contains(term))
+                return true;
+        }
+
+        return false;
+    }
+
+    private ArrayList<String> entitled (ArrayList<Recipe> recipes, ArrayList<String> terms){
+        ArrayList<String> results = new ArrayList<String>();
+        ArrayList<Recipe> temp = new ArrayList<Recipe>();
+        temp.addAll(recipes);
+
+        for (String s : terms){
+            for (Recipe r : recipes){
+                if (!r.getTitle().toLowerCase().contains(s))
+                    temp.remove(r);
+            }
+        }
+
+        for (Recipe r : temp){
+            results.add(r.getTitle());
+        }
+        return results;
+    }
+
+    //Remove the function part of the speech, returning only the query
+    private String getQuery(int function, String speech){
+        Log.d("Speech", speech);
+        int index = 0;
+        ArrayList<String> words = new ArrayList<String>();
+        ArrayList<String> wordsCopy = new ArrayList<String>();
+
+        StringTokenizer token = new StringTokenizer(speech);
+        while (token.hasMoreTokens()){
+            words.add(token.nextToken());
+        }
+
+        wordsCopy.addAll(words);
+
+        if (function == CONTAIN){
+            for (String s : words){
+                if (!s.contains("contain"))
+                    wordsCopy.remove(s);
+                else {
+                    wordsCopy.remove(0);
+                    break;
+                }
+            }
+        } else if (function == ENTITLED){
+            for (String s : words){
+                if (!s.contains("entitled"))
+                    wordsCopy.remove(s);
+                else {
+                    wordsCopy.remove(0);
+                    break;
+                }
+            }
+        } else if (function == TAGGED){
+            for (String s : words){
+                if (!s.contains("tagged"))
+                    wordsCopy.remove(s);
+                else {
+                    wordsCopy.remove(0);
+                    break;
+                }
+            }
+            if (wordsCopy.get(0).equals("with"))
+                wordsCopy.remove(0);
+        }
+
+        //Reconstruct a sentence from the ArrayList. Don't add a space if it's the last word.
+        String temp = "";
+        for (String s : wordsCopy){
+            temp += s;
+            if (wordsCopy.indexOf(s) < wordsCopy.size()-1)
+                temp += " ";
+        }
+
+        //Return the sentence.
+        return temp;
+    }
+
+    //Convenience method for using the system voice
+    private void speak(String s){
+        speech.speak(s, TextToSpeech.QUEUE_FLUSH, null, null);
+        Toast.makeText(MainActivity.this, s, Toast.LENGTH_SHORT).show();
     }
 
     public void setViewerFragment() {
