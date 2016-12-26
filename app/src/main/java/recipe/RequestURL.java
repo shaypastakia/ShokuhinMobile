@@ -32,7 +32,7 @@ public class RequestURL {
     public String toString(){
         String temp = "http://";
         temp += url;
-        temp += ":8080/ShokuhinServer/shokuhin";
+//        temp += ":8080/ShokuhinServer/shokuhin";
         if (!parameters.isEmpty())
             temp += "?";
         for (Pair<String, String> pair : parameters){

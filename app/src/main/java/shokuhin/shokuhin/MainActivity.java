@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.FragmentManager;
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Point;
@@ -17,16 +18,14 @@ import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ShareActionProvider;
 import android.widget.Toast;
 
 import java.io.File;
-import java.lang.reflect.Array;
-import java.sql.Struct;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Locale;
 import java.util.StringTokenizer;
 
@@ -36,11 +35,15 @@ import recipe.Recipe;
 public class MainActivity extends Activity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
 
-    public static final int CONTAIN = 0;
-    public static final int ENTITLED = 1;
-    public static final int TAGGED = 2;
-    public static final int COUNT = 3;
-    public static final int UNCOOKED = 4;
+    public static final int NOSPEAK = -1; //Set at the end of a function, if the Speak function shouldn't be used
+    public static final int CONTAIN = 0; //"Recipes containing plain flour and egg"
+    public static final int ENTITLED = 1; //"Recipes entitled sauce"
+    public static final int TAGGED = 2; //"Recipes tagged with quick and Chinese"
+    public static final int COUNT = 3; //"How many recipes are there?"
+    public static final int UNCOOKED = 4; //"Which recipes haven't I cooked?
+    public static final int DISHES = 5; //"Show me Dinner dishes"
+
+    ArrayList courses = new ArrayList(Arrays.asList("breakfast", "lunch", "dinner", "dessert", "snack", "general"));
 
     MainActivity main = this;
     RecipeListFragment searchFragment;// = new RecipeListFragment().initialise(0, this, (String)null);
@@ -52,7 +55,7 @@ public class MainActivity extends Activity
     public boolean firstSpeak = true;
     public ShareActionProvider share;
     public File dir;
-    public static String url = "192.168.1.147";
+    public static String url = "shokuhin.herokuapp.com/shokuhin"; //"192.168.1.147";
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -67,9 +70,10 @@ public class MainActivity extends Activity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d("check", "1");
 
         searchFragment = new RecipeListFragment().initialise(0, this, (String) null);
-
+        Log.d("check", "1");
         dir = getFilesDir();
         if (speech == null) {
             speech = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
@@ -81,16 +85,21 @@ public class MainActivity extends Activity
                 }
             });
         }
+        Log.d("check", "3");
         getWindowManager().getDefaultDisplay().getSize(size);
         setContentView(R.layout.activity_main);
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getFragmentManager().findFragmentById(R.id.navigation_drawer);
         mTitle = getTitle();
-
+        Log.d("check", "4");
         // Set up the drawer.
         mNavigationDrawerFragment.setUp(
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
+        Log.d("check", "5");
+        //Clear the user's Cache
+        deleteCache(main);
+        Log.d("check", "6");
     }
 
     @Override
@@ -103,6 +112,7 @@ public class MainActivity extends Activity
                 deleteDir(getFilesDir());
             }
         } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -215,11 +225,8 @@ public class MainActivity extends Activity
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     searchTerm = textBox.getText().toString();
-                    if (searchTerm == null) {
-                        return;
-                    }
 
-                    if (searchTerm == "") {
+                    if (searchTerm.equals("")) {
                         searchTerm = null;
                         searchFragment = null;
                         onNavigationDrawerItemSelected(0);
@@ -236,19 +243,11 @@ public class MainActivity extends Activity
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     dialog.cancel();
-                    return;
                 }
             });
 
             entry.show();
         } else if (item.getItemId() == R.id.advanced_search) {
-//            ConnectivityManager connMgr = (ConnectivityManager)
-//                    getSystemService(Context.CONNECTIVITY_SERVICE);
-//
-//            if (!connMgr.getNetworkInfo(ConnectivityManager.TYPE_WIFI).isConnected()){
-//                Toast.makeText(main, "Feature unavailable using 3G.", Toast.LENGTH_SHORT).show();
-//                return false;
-//            }
 
             //Text Entry Dialog based on Aaron, http://stackoverflow.com/questions/10903754/input-text-dialog-android
             AlertDialog.Builder entry = new AlertDialog.Builder(this);
@@ -260,7 +259,7 @@ public class MainActivity extends Activity
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
 
-                    if (textBox.getText().toString() == null || textBox.getText().toString().equals("")) {
+                    if (textBox.getText().toString().equals("")) {
                         searchFragment = null;
                         onNavigationDrawerItemSelected(0);
                         return;
@@ -296,18 +295,38 @@ public class MainActivity extends Activity
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     dialog.cancel();
-                    return;
                 }
             });
 
             entry.show();
         } else if (item.getItemId() == R.id.sync) {
-            new Handler().post(new Runnable() {
-                @Override
-                public void run() {
-                    sync();
-                }
-            });
+//            AlertDialog.Builder entry = new AlertDialog.Builder(this);
+//            entry.setTitle("Enter a URL.");
+//            final EditText textBox = new EditText(this);
+//            textBox.setInputType(InputType.TYPE_CLASS_TEXT);
+//            entry.setView(textBox);
+//            entry.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+//
+//                @Override
+//                public void onClick(DialogInterface face,int i){
+//                    url=textBox.getText().toString();
+                    new Handler().post(new Runnable() {
+                        @Override
+                        public void run() {
+                            sync();
+                        }
+                    });
+//                }
+//            });
+//
+//            entry.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+//                @Override
+//                public void onClick(DialogInterface dialog, int which) {
+//                    dialog.cancel();
+//                }
+//            });
+//
+//            entry.show();
 
         } else if (item.getItemId() == R.id.voice) {
             new Handler().post(new Runnable() {
@@ -341,10 +360,10 @@ public class MainActivity extends Activity
             return;
 
         //Store the phrase spoken, as well as a list of recipes on the device.
-        String speech = "";
-        ArrayList<Recipe> recipes = null;
+        String text;
+        ArrayList<Recipe> recipes;
 
-        ArrayList<String> results = new ArrayList<String>();
+        ArrayList<String> results = new ArrayList<>();
         //Store the function, as specified in 'speech'.
         int function;
 
@@ -352,7 +371,7 @@ public class MainActivity extends Activity
         //Assign the speech and a list of all Recipes to variables.
         if (resultCode == RESULT_OK && null != data) {
             ArrayList<String> result = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
-            speech = result.get(0).toLowerCase();
+            text = result.get(0).toLowerCase();
             try {
                 recipes = new RetrieveAllRecipesTask(main).execute().get();
             } catch (Exception e) {
@@ -367,15 +386,41 @@ public class MainActivity extends Activity
 
         //At this point, Speech and Recipes are assigned.
         //Establish the function, and assign it to 'function'.
-        String query = "";
+        String query;
 
-        if (speech.contains("contain")) {
+        if (text.contains("ask")) {
+            speak("Here are questions you can ask me");
+            AlertDialog.Builder list = new AlertDialog.Builder(
+                    this);
+
+            list.setTitle("Questions");
+
+            list.setMessage("Recipes containing X and Y" +
+                    "\nRecipes entitled X" +
+                    "\nRecipes tagged with X and Y" +
+                    "\nHow many recipes are there?" +
+                    "\nWhich recipes haven't I cooked?" +
+                    "\nShow me X dishes");
+
+            list.setPositiveButton("OK",new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog,int id) {
+                    dialog.cancel();
+                }
+            });
+
+            list.show();
+            return;
+        }
+
+        if (text.contains("contain")) {
             function = CONTAIN;
-        } else if (speech.contains("entitled")) {
+        } else if (text.contains("entitled")) {
             function = ENTITLED;
-        } else if (speech.contains("tagged")) {
+        } else if (text.contains("tagged")) {
             function = TAGGED;
-        } else if (speech.contains("haven't")) {
+        } else if (text.contains("dishes")) {
+            function = DISHES;
+        }else if (text.contains("haven't")) {
             function = UNCOOKED;
             try {
                 for (Recipe r : new RetrieveAllRecipesTask(main).execute().get()) {
@@ -388,30 +433,48 @@ public class MainActivity extends Activity
                 e.printStackTrace();
                 Toast.makeText(MainActivity.this, "Unable to find recipes", Toast.LENGTH_SHORT).show();
             }
-        }else if (speech.contains("many")){ //Special Case
+            function = NOSPEAK;
+        }else if (text.contains("many")){ //Special Case
             function = COUNT;
             speak("There are " + recipes.size() + " recipes on this device");
             return;
         } else {
-            speak("Unable to recognise " + speech);
+            speak("Unable to recognise " + text);
             return;
         }
 
-        //For the CONTAIN, ENTITLED, and TAGGED functions, elicit a Query.
-        query = getQuery(function, speech);
+        //For the CONTAIN, ENTITLED, TAGGED and DISHES functions, elicit a Query.
+        query = getQuery(function, text);
 
+        if (function == DISHES){
+            if (!courses.contains(query.toLowerCase())){
+                speak("There are no " + query + " dishes");
+                return;
+            }
+
+            int course = courses.indexOf(query.toLowerCase());
+            for (Recipe r : recipes){
+                if (r.getCourse() == course)
+                    results.add(r.getTitle());
+            }
+
+            searchFragment = new RecipeListFragment().initialise(0, main, results);
+            onNavigationDrawerItemSelected(0);
+            speak("Here are " + query + " dishes");
+            return;
+        }
         //At this point, COUNT and UNCOOKED have been completed.
-        //CONTAIN, ENTITLED, and TAGGED require further processing.
+        //CONTAIN, ENTITLED, TAGGED and DISHES require further processing.
         //It is now "function" and "Query" being processed.
 
         //First, split the Query by AND.
-        ArrayList<String> terms = new ArrayList<String>();
+        ArrayList<String> terms = new ArrayList<>();
         if (!query.contains("and"))
             terms.add(query);
         else {
             String[] tokens = query.split("and");
             terms.addAll(Arrays.asList(tokens));
-            int i = 0;
+            int i;
             for (String s : terms){
                 i = terms.indexOf(s);
                 terms.set(i, s.trim());
@@ -450,12 +513,14 @@ public class MainActivity extends Activity
         //Results are passed into the "results" ArrayList, and these are then processed.
         searchFragment = new RecipeListFragment().initialise(0, main, results);
         onNavigationDrawerItemSelected(0);
-        speak(phrase);
+
+        if (!(function == NOSPEAK))
+            speak(phrase);
     }
 
     private ArrayList<String> tagged(ArrayList<Recipe> recipes, ArrayList<String> terms){
-        ArrayList<String> results = new ArrayList<String>();
-        ArrayList<Recipe> temp = new ArrayList<Recipe>();
+        ArrayList<String> results = new ArrayList<>();
+        ArrayList<Recipe> temp = new ArrayList<>();
         temp.addAll(recipes);
 
         for (String s : terms){
@@ -472,8 +537,8 @@ public class MainActivity extends Activity
     }
 
     private ArrayList<String> contain(ArrayList<Recipe> recipes, ArrayList<String> terms){
-        ArrayList<String> results = new ArrayList<String>();
-        ArrayList<Recipe> temp = new ArrayList<Recipe>();
+        ArrayList<String> results = new ArrayList<>();
+        ArrayList<Recipe> temp = new ArrayList<>();
         temp.addAll(recipes);
 
         for (String s : terms){
@@ -500,8 +565,8 @@ public class MainActivity extends Activity
     }
 
     private ArrayList<String> entitled (ArrayList<Recipe> recipes, ArrayList<String> terms){
-        ArrayList<String> results = new ArrayList<String>();
-        ArrayList<Recipe> temp = new ArrayList<Recipe>();
+        ArrayList<String> results = new ArrayList<>();
+        ArrayList<Recipe> temp = new ArrayList<>();
         temp.addAll(recipes);
 
         for (String s : terms){
@@ -519,10 +584,9 @@ public class MainActivity extends Activity
 
     //Remove the function part of the speech, returning only the query
     private String getQuery(int function, String speech){
-        Log.d("Speech", speech);
-        int index = 0;
-        ArrayList<String> words = new ArrayList<String>();
-        ArrayList<String> wordsCopy = new ArrayList<String>();
+
+        ArrayList<String> words = new ArrayList<>();
+        ArrayList<String> wordsCopy = new ArrayList<>();
 
         StringTokenizer token = new StringTokenizer(speech);
         while (token.hasMoreTokens()){
@@ -530,6 +594,11 @@ public class MainActivity extends Activity
         }
 
         wordsCopy.addAll(words);
+
+        if (function == DISHES) {
+            int i = wordsCopy.lastIndexOf("dishes")-1;
+            return wordsCopy.get(i);
+        }
 
         if (function == CONTAIN){
             for (String s : words){
@@ -577,7 +646,7 @@ public class MainActivity extends Activity
     //Convenience method for using the system voice
     private void speak(String s){
         speech.speak(s, TextToSpeech.QUEUE_FLUSH, null, null);
-        Toast.makeText(MainActivity.this, s, Toast.LENGTH_SHORT).show();
+        Toast.makeText(MainActivity.this, s, Toast.LENGTH_LONG).show();
     }
 
     public void setViewerFragment() {
@@ -604,5 +673,29 @@ public class MainActivity extends Activity
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    //As per http://stackoverflow.com/questions/6898090/how-to-clear-cache-android, answer by ilango j
+    public static void deleteCache(Context context) {
+        try {
+            File dir = context.getCacheDir();
+            if (dir != null && dir.isDirectory()) {
+                deleteDirectory(dir);
+            }
+        } catch (Exception e) {}
+    }
+
+    //As per http://stackoverflow.com/questions/6898090/how-to-clear-cache-android, answer by ilango j
+    public static boolean deleteDirectory(File dir) {
+        if (dir != null && dir.isDirectory()) {
+            String[] children = dir.list();
+            for (int i = 0; i < children.length; i++) {
+                boolean success = deleteDirectory(new File(dir, children[i]));
+                if (!success) {
+                    return false;
+                }
+            }
+        }
+        return dir.delete();
     }
 }

@@ -115,14 +115,12 @@ public class RecipeListFragment extends Fragment {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
-                Recipe recipe;
                 try {
                     RetrieveRecipeTask task = new RetrieveRecipeTask(main, recipes, position);
                     task.execute();
                     main.recipe = task.get();
                     main.setViewerFragment();
                     main.mNavigationDrawerFragment.selectItem(1);
-//                        Toast.makeText(main, "4", Toast.LENGTH_LONG).show();
                 } catch (Exception e) {
                     Toast.makeText(main, "FAILED", Toast.LENGTH_LONG).show();
                     e.printStackTrace();

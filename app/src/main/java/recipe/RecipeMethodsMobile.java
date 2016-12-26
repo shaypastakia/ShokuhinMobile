@@ -1,12 +1,8 @@
 package recipe;
 
-import android.content.Context;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import org.apache.http.params.CoreProtocolPNames;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -63,7 +59,7 @@ public class RecipeMethodsMobile {
     public static Recipe requestRecipe (MainActivity main, String title){
         //Request a Recipe, and parse it from JSON
         String responseStr;
-        RequestURL req = new RequestURL("192.168.1.147");
+        RequestURL req = new RequestURL(MainActivity.url);
         req.addParameter("type", "REQUEST");
         req.addParameter("recipe", title);
 
@@ -109,6 +105,7 @@ public class RecipeMethodsMobile {
             }
             bufRead.close();
             String responseStr = response.toString();
+            Log.e("response", "" + responseStr);
             temp = mapper.readValue(responseStr, TreeMap.class);
             connection.disconnect();
             return temp;
@@ -129,6 +126,7 @@ public class RecipeMethodsMobile {
             connection.setUseCaches(false);
             connection.setDoInput(true);
             connection.setDoOutput(true);
+            connection.setRequestProperty("Connection", "close");
 //            connection.setRequestProperty("User-Agent", "Mozilla/5.0 ( compatible ) ");
             String prop = System.getProperty("http.agent");
             connection.setRequestProperty("User-Agent", prop);
